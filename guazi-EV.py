@@ -2,6 +2,7 @@ from selenium import webdriver
 import pandas as pd
 import time
 import os.path
+from datetime import date
 
 def get_parent_text(element):
     parent_text = element.text
@@ -48,9 +49,11 @@ def run_link_list(link_list,driver):
             
             car_number = driver.find_element_by_class_name('right-carnumber')
             car_number_data = get_parent_text(car_number)
+            car_number_data = car_number_data.replace('\n','').replace('车源号：','')
             
             price = driver.find_element_by_class_name('pricestype')
             price_data = get_parent_text(price)
+            
             
             new_car_price = driver.find_element_by_class_name('newcarprice')
             new_car_price_data = get_parent_text(new_car_price)
@@ -71,25 +74,27 @@ def run_link_list(link_list,driver):
             battery_torque_data = driver.find_elements_by_xpath("//tr[* = '电动机总扭矩(N·m)']/self::tr")[0].text.replace('电动机总扭矩(N·m) ','')
             endurance_miles_data = driver.find_elements_by_xpath("//tr[* = '续航里程(km)']/self::tr")[0].text.replace('续航里程(km) ','')
             
-            if not os.path.isfile('C:/Users/Lenovo/Desktop/selenium/output.csv'):
+            today = str(date.today())
+            
+            if not os.path.isfile('C:/Users/Lenovo/Desktop/selenium/selenium/EV/output.csv'):
                 df = pd.DataFrame(columns=['title','car_number','price','new_car_price','licensing_time','miles',
                                       'license_location','battery_volume','battery_power_data','battery_torque_data',
-                                      'endurance_miles','make','type'])
+                                      'endurance_miles','make','type','record_date'])
             else:
-                df = pd.read_csv('C:/Users/Lenovo/Desktop/selenium/output.csv',encoding='gbk')
+                df = pd.read_csv('C:/Users/Lenovo/Desktop/selenium/selenium/EV/output.csv',encoding='gbk')
                 
             
             new_df = pd.DataFrame(columns=['title','car_number','price','new_car_price','licensing_time','miles',
                                       'license_location','battery_volume','battery_power_data','battery_torque_data',
-                                      'endurance_miles','make','type'],
+                                      'endurance_miles','make','type','record_date'],
                                         data=[[title_data,car_number_data,price_data,new_car_price_data,
                                               licensing_time_data,miles_data,license_location_data,battery_volume_data,
-                                              battery_power_data,battery_torque_data,endurance_miles_data,make_data,type_data]])
+                                              battery_power_data,battery_torque_data,endurance_miles_data,make_data,type_data,today]])
             
         
             df = df.append(new_df)
             print(len(df))
-            df.to_csv('C:/Users/Lenovo/Desktop/selenium/output.csv',index=False)
+            df.to_csv('C:/Users/Lenovo/Desktop/selenium/selenium/EV/output.csv',index=False)
             print(title_data)
         except:
             pass
