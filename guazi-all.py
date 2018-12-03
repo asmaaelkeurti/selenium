@@ -4,6 +4,13 @@ import time
 import os.path
 from datetime import date
 
+#link_data
+def get_car_link(driver):
+    l_list = ['https://www.guazi.com/www/buy/c-1f1/#bread',         #汽油
+              'https://www.guazi.com/www/buy/c-1f3/#bread',         #电动
+              'https://www.guazi.com/www/buy/c-1f4/#bread']         #油电混动
+
+
 def get_parent_text(element):
     parent_text = element.text
     for child_element in element.find_elements_by_xpath(".//*"):
@@ -17,27 +24,50 @@ def load_driver():
     profile.set_preference("permissions.default.image",2)
     
     driver = webdriver.Firefox(firefox_profile=profile)
-    driver.get("https://www.guazi.com/www/buy/c-1f3/#bread")
+    #driver.get("https://www.guazi.com/www/buy/c-1f3/#bread")
                
     return driver
 
-def get_car_link(driver): 
-    link_list = []
+def get_car_link(driver,vehicle_type): 
+    today = str(date.today())
     page = 0
+    
+    file_location = 'C:/Users/Lenovo/Desktop/selenium/selenium/All_Vehicle/output.csv'
+    columns=['info','vehicle_id','link','record_date','vehicle_type']
+                
+    if not os.path.isfile(file_location):
+        df = pd.DataFrame(columns=columns)
+    else:
+        df = pd.read_csv(file_location,encoding='gbk')
+    
     try:
         while driver.find_element_by_partial_link_text('下一页') != None:
-            a_list = driver.find_elements_by_class_name('car-a')
-            for a in a_list:
-                link_list = link_list + [a.get_attribute('href')]
+            car_list = driver.find_element_by_class_name('carlist')
+            li_list = car_list.find_elements_by_xpath('./li')
+            
+
+            
+            for li in li_list:
+                info = li.text.replace('\n','').replace('\r','')
+                vehicle_id = li.get_attribute('data-scroll-track')
+                link = li.find_element_by_class_name('car-a').get_attribute('href')
+                          
+                new_df = pd.DataFrame(columns=columns,
+                                        data=[[info,vehicle_id,link,today,vehicle_type]])
+            
+                df = df.append(new_df)
+                
             next_page = driver.find_element_by_partial_link_text('下一页')
             next_page.click()
             page = page + 1
             print(page)
-            print(len(link_list))
-            time.sleep(5)
+            time.sleep(2)
+            
+            df.to_csv(file_location,index=False)
+            
+        
     except:
         pass
-    return link_list
 
 def run_link_list(link_list,driver):
     for link in link_list:
