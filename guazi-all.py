@@ -4,6 +4,12 @@ import time
 import os.path
 from datetime import date
 
+l_list = [['https://www.guazi.com/www/buy/c-1f3/#bread','EV'],              #电动
+           ['https://www.guazi.com/www/buy/c-1f1/#bread','gas'],            #汽油
+         ['https://www.guazi.com/www/buy/c-1f4/#bread','hybrid']]           #油电混动
+
+
+
 #link_data
 def get_car_link(driver):
     l_list = ['https://www.guazi.com/www/buy/c-1f1/#bread',         #汽油
@@ -32,7 +38,7 @@ def get_car_link(driver,vehicle_type):
     today = str(date.today())
     page = 0
     
-    file_location = 'C:/Users/Lenovo/Desktop/selenium/selenium/All_Vehicle/output.csv'
+    file_location = 'C:/Users/Lenovo/Desktop/selenium/selenium/All_Vehicle/output-%s.csv' % today
     columns=['info','vehicle_id','link','record_date','vehicle_type']
                 
     if not os.path.isfile(file_location):
@@ -42,11 +48,10 @@ def get_car_link(driver,vehicle_type):
     
     try:
         while driver.find_element_by_partial_link_text('下一页') != None:
+            
             car_list = driver.find_element_by_class_name('carlist')
             li_list = car_list.find_elements_by_xpath('./li')
-            
 
-            
             for li in li_list:
                 info = li.text.replace('\n','').replace('\r','')
                 vehicle_id = li.get_attribute('data-scroll-track')
@@ -64,8 +69,6 @@ def get_car_link(driver,vehicle_type):
             time.sleep(2)
             
             df.to_csv(file_location,index=False)
-            
-        
     except:
         pass
 
@@ -128,3 +131,11 @@ def run_link_list(link_list,driver):
             print(title_data)
         except:
             pass
+
+
+
+driver = load_driver()
+for i in l_list:
+    driver.get(i[0])
+    time.sleep(2)
+    get_car_link(driver,i[1])
